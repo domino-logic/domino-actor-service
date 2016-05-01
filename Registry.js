@@ -4,6 +4,7 @@
 const redisClient = require('redis').createClient()
 const messenger = require('./messenger')
 
+const expiration = 120 // 2 minutes
 
 class Registry {
   constructor (options) {
@@ -17,10 +18,23 @@ class Registry {
     console.log(`Registered actor on ${queue}`)
   }
 
+  _now () {
+    return parseInt(new Date().getTime() / 1000, 10);
+  }
+
   registerWhatcher (queue, watcherQueue, callback){
     const aggregatedWatcherQueue = `when:${queue}`
 
-    redisClient.sadd(aggregatedWatcherQueue, watcherQueue);
+    const addToRedisQueue = () => {
+      redisClient.zadd(
+        aggregatedWatcherQueue,
+        this._now(),
+        watcherQueue
+      );
+    }
+
+    addToRedisQueue()
+    setInterval(addToRedisQueue, expiration * 1000 / 2)
 
     messenger.consume(
       queue,
@@ -35,14 +49,30 @@ class Registry {
     console.log(`Registered watcher on ${queue}`)
   }
 
+  hasExpired (timestamp) {
+    return timestamp < this._now() - expiration
+  }
+
   triggerWatchers (aggregatedWatcherQueue, payload) {
-    function trigger(watcherQueue) {
-      messenger.publish(watcherQueue, payload)
+    function trigger(err, watcherQueues) {
+      var counter = 0;
+
+      for(let i = 0; i < watcherQueues.length ; i = i + 2){
+        let watcherQueue = watcherQueues[i];
+        let timestamp = watcherQueues[i + 1];
+
+        if(this.hasExpired(timestamp)){
+          console.log(`Deregister watcher ${watcherQueue} from ${aggregatedWatcherQueue}`)
+          redisClient.zrem(aggregatedWatcherQueue, watcherQueue);
+        }else{
+          messenger.publish(watcherQueue, payload);
+        }
+      }
     }
 
-    redisClient.smembers(
-      aggregatedWatcherQueue,
-      (err, watcherQueues) => watcherQueues.forEach(trigger)
+    redisClient.zrange(
+      aggregatedWatcherQueue, 0, -1, 'WITHSCORES',
+      trigger.bind(this)
     )
   }
 }
