@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 
 const redisClient = require('redis').createClient()
@@ -6,19 +6,17 @@ const redisClient = require('redis').createClient()
 
 class Registry {
   constructor (options) {
-    this.messenger = options.messenger;
-    this.action_queue = options.action_queue || 'domino_action'
-    this.dispatch_queue = options.dispatch_queue || 'domino_dispatch'
+    this.messenger = options.messenger
     this.expiration = options.expiration || 60 * 5 // default 5 minutes
   }
 
   registerActor (queue, callback) {
-    this.messenger.consume(queue, callback);
+    this.messenger.consume(queue, callback)
     console.log(`Registered actor on ${queue}`)
   }
 
   _now () {
-    return parseInt(new Date().getTime() / 1000, 10);
+    return parseInt(new Date().getTime() / 1000, 10)
   }
 
   registerWhatcher (queue, watcherQueue, callback){
@@ -29,7 +27,7 @@ class Registry {
         aggregatedWatcherQueue,
         this._now(),
         watcherQueue
-      );
+      )
     }
 
     addToRedisQueue()
@@ -38,12 +36,12 @@ class Registry {
     this.messenger.consume(
       watcherQueue,
       (body) => callback(body, this.messenger.broadcast.bind(this.messenger))
-    );
+    )
 
     this.messenger.consume(
       queue,
       this.triggerWatchers.bind(this, aggregatedWatcherQueue)
-    );
+    )
 
     console.log(`Registered watcher on ${queue}`)
   }
@@ -54,17 +52,17 @@ class Registry {
 
   triggerWatchers (aggregatedWatcherQueue, payload) {
     function trigger(err, watcherQueues) {
-      var counter = 0;
+      var counter = 0
 
-      for(let i = 0; i < watcherQueues.length ; i = i + 2){
-        let watcherQueue = watcherQueues[i];
-        let timestamp = watcherQueues[i + 1];
+      for(let i = 0 ; i < watcherQueues.length ; i = i + 2){
+        let watcherQueue = watcherQueues[i]
+        let timestamp = watcherQueues[i + 1]
 
         if(this.hasExpired(timestamp)){
           console.log(`Deregister watcher ${watcherQueue} from ${aggregatedWatcherQueue}`)
-          redisClient.zrem(aggregatedWatcherQueue, watcherQueue);
+          redisClient.zrem(aggregatedWatcherQueue, watcherQueue)
         }else{
-          this.messenger.publish(watcherQueue, payload);
+          this.messenger.publish(watcherQueue, payload)
         }
       }
     }
@@ -76,4 +74,4 @@ class Registry {
   }
 }
 
-module.exports = Registry;
+module.exports = Registry

@@ -1,17 +1,32 @@
-'use strict';
+'use strict'
 
 const Dispatcher = require('./Dispatcher')
 const Registry = require('./Registry')
 const redisClient = require("redis").createClient()
+const DRM = require('domino-rabbitmq-messenger')
 
 
 class ActionHandler {
   constructor (options) {
-    this.registry = new Registry(options)
-    this.dispatcher = new Dispatcher(options)
+    this.options = options || {}
+    this.actionQueue = this.options.actionQueue || 'domino_action'
+    this.dispatchQueue = this.options.dispatchQueue || 'domino_dispatch'
+    this.messenger = new DRM.Messenger(this.options)
+  }
 
-    this.actionQueue = options.actionQueue || 'domino_action';
-    this.dispatchQueue = options.dispatchQueue || 'domino_dispatch';
+  start (callback) {
+    this.messenger.start( (err, messenger) => {
+      if(err && callback) return callback(err)
+
+      const options = Object.assign({}, this.options, {messenger})
+
+      this.registry = new Registry(options)
+      this.dispatcher = new Dispatcher(options)
+
+      console.log(`ActionHandler is ready...`)
+
+      if(callback) callback(null, this)
+    })
   }
 
   getActionQueue (actionName) {
@@ -23,27 +38,27 @@ class ActionHandler {
   }
 
   domain (domainName) {
-    this.domainName = domainName;
-    return this;
+    this.domainName = domainName
+    return this
   }
 
   actor (name, callback) {
-    const dispatch = this.dispatcher.getDispatcherFor(this.domainName);
+    const dispatch = this.dispatcher.getDispatcherFor(this.domainName)
 
     this.registry.registerActor(
       this.getActionQueue(name),
       function(body){
         callback(body, dispatch)
       }
-    );
-    return this;
+    )
+    return this
   }
 
   watcher (name, funcName, callback) {
     if (arguments.length == 2) {
-      name = arguments[0];
-      funcName = arguments[1].name;
-      callback = arguments[1];
+      name = arguments[0]
+      funcName = arguments[1].name
+      callback = arguments[1]
     }
 
     if (!funcName) {
@@ -58,9 +73,9 @@ class ActionHandler {
       this.getDispatchQueue(name),
       `${this.getDispatchQueue(name)}.${funcName}`,
       callback
-    );
+    )
 
-    return this;
+    return this
   }
 
 }
