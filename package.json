@@ -1,0 +1,27 @@
+{
+  "name": "domino-actor-service",
+  "version": "1.0.0",
+  "description": "Node library to create actors for Domino",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/domino-logic/domino-actor-service.git"
+  },
+  "keywords": [
+    "domino",
+    "actor",
+    "asynchronous",
+    "node"
+  ],
+  "author": "Brice LEROY",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/domino-logic/domino-actor-service/issues"
+  },
+  "homepage": "https://github.com/domino-logic/domino-actor-service#readme"
+}
