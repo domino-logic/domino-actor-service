@@ -1,12 +1,9 @@
 'use strict';
 
-const messenger = require('./messenger')
-
-
 class Dispatcher {
   constructor (options) {
-    this.options = options || {};
-    this.dispatch_queue = this.options.dispatch_queue || 'domino_dispatch';
+    this.messenger = options.messenger;
+    this.dispatch_queue = options.dispatch_queue || 'domino_dispatch';
   }
 
   getDispatchQueue (domainName, actionName) {
@@ -25,7 +22,7 @@ class Dispatcher {
         throw new Error('Dispatcher.dispatch(...): action is missing');
       }
 
-      messenger.publish(
+      this.messenger.publish(
         this.getDispatchQueue(domainName, actionName),
         {payload, actionName}
       )

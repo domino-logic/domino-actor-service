@@ -2,19 +2,18 @@
 
 
 const redisClient = require('redis').createClient()
-const messenger = require('./messenger')
 
-const expiration = 120 // 2 minutes
 
 class Registry {
   constructor (options) {
-    this.options = options || {};
-    this.action_queue = this.options.action_queue || 'domino_action'
-    this.dispatch_queue = this.options.dispatch_queue || 'domino_dispatch'
+    this.messenger = options.messenger;
+    this.action_queue = options.action_queue || 'domino_action'
+    this.dispatch_queue = options.dispatch_queue || 'domino_dispatch'
+    this.expiration = options.expiration || 60 * 5 // default 5 minutes
   }
 
   registerActor (queue, callback) {
-    messenger.consume(queue, callback);
+    this.messenger.consume(queue, callback);
     console.log(`Registered actor on ${queue}`)
   }
 
@@ -34,14 +33,14 @@ class Registry {
     }
 
     addToRedisQueue()
-    setInterval(addToRedisQueue, expiration * 1000 / 2)
+    setInterval(addToRedisQueue, this.expiration * 1000 / 2)
 
-    messenger.consume(
+    this.messenger.consume(
       queue,
       this.triggerWatchers.bind(this, aggregatedWatcherQueue)
     );
 
-    messenger.consume(
+    this.messenger.consume(
       watcherQueue,
       callback.bind(this)
     );
@@ -50,7 +49,7 @@ class Registry {
   }
 
   hasExpired (timestamp) {
-    return timestamp < this._now() - expiration
+    return timestamp < this._now() - this.expiration
   }
 
   triggerWatchers (aggregatedWatcherQueue, payload) {
@@ -65,7 +64,7 @@ class Registry {
           console.log(`Deregister watcher ${watcherQueue} from ${aggregatedWatcherQueue}`)
           redisClient.zrem(aggregatedWatcherQueue, watcherQueue);
         }else{
-          messenger.publish(watcherQueue, payload);
+          this.messenger.publish(watcherQueue, payload);
         }
       }
     }
