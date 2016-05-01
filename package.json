@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "description": "Node library to create actors for Domino",
   "main": "index.js",
-  "dependencies": {},
+  "dependencies": {
+    "amqplib": "^0.4.1",
+    "redis": "^2.6.0-2"
+  },
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

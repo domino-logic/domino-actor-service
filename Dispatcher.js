@@ -1,4 +1,6 @@
-const Messenger = require('Messenger')
+'use strict';
+
+const messenger = require('./messenger')
 
 
 class Dispatcher {
@@ -17,16 +19,20 @@ class Dispatcher {
     }
 
     return (actionName, payload) => {
+      console.log(`dispatching ${actionName}:`, payload)
+
       if(!actionName) {
         throw new Error('Dispatcher.dispatch(...): action is missing');
       }
 
-      this.messenger.publish(
-        getDispatchQueue(domainName, actionName),
-        payload
+      messenger.publish(
+        this.getDispatchQueue(domainName, actionName),
+        {payload, actionName}
       )
     }
 
   }
 
 }
+
+module.exports = Dispatcher;

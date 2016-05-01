@@ -7,10 +7,23 @@ class Messenger {
   constructor (options) {
     this.options = options || {}
     this.assertedQueues = {}
+  }
 
+  config (options) {
+    Object.assign(this.options, options)
+  }
+
+  start (callback) {
     const amqp_url = this.options.amqp || 'amqp://localhost';
+    amqp.connect(amqp_url, (err, conn) => {
+      this.AssertNoError(err);
 
-    amqp.connect(amqp_url, this.initAMQP.bind(this))
+      conn.createChannel( (err, channel) => {
+        this.AssertNoError(err);
+        this.channel = channel;
+        callback()
+      });
+    });
   }
 
   AssertNoError (err) {
@@ -18,15 +31,6 @@ class Messenger {
       console.error(err);
       process.exit(1);
     }
-  }
-
-  initAMQP (err, conn) {
-    this.AssertNoError(err);
-
-    conn.createChannel( (err, channel) => {
-      this.AssertNoError(err);
-      this.channel = channel;
-    });
   }
 
   ack (msg) {
@@ -37,7 +41,8 @@ class Messenger {
     this.assertQueue(queue);
     this.channel.consume(queue, (msg) => {
       msg.content = JSON.parse(msg.content)
-      callback(mss.content)
+      callback(msg.content);
+      this.ack(msg);
     })
   }
 
@@ -52,7 +57,7 @@ class Messenger {
       {persistent: true}
     );
 
-    console.log(`Published message to ${json.type}@${queue}: `, json.payload);
+    console.log(`Published message to ${queue}: `, json.payload);
   }
 
   assertQueue (queue) {
@@ -64,4 +69,6 @@ class Messenger {
   }
 }
 
-module.exports = Messenger
+
+
+module.exports = new Messenger()

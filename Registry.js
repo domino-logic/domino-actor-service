@@ -1,5 +1,8 @@
+'use strict';
+
+
 const redisClient = require('redis').createClient()
-const Messenger = require('Messenger')
+const messenger = require('./messenger')
 
 
 class Registry {
@@ -7,10 +10,11 @@ class Registry {
     this.options = options || {};
     this.action_queue = this.options.action_queue || 'domino_action'
     this.dispatch_queue = this.options.dispatch_queue || 'domino_dispatch'
-    this.messenger = new Messenger(options);
   }
+
   registerActor (queue, callback) {
-    this.messenger.consume(queue, callback);
+    messenger.consume(queue, callback);
+    console.log(`Registered actor on ${queue}`)
   }
 
   registerWhatcher (queue, watcherQueue, callback){
@@ -18,20 +22,27 @@ class Registry {
 
     redisClient.sadd(aggregatedWatcherQueue, watcherQueue);
 
-    this.messenger.consume(
+    messenger.consume(
       queue,
       this.triggerWatchers.bind(this, aggregatedWatcherQueue)
     );
+
+    messenger.consume(
+      watcherQueue,
+      callback.bind(this)
+    );
+
+    console.log(`Registered watcher on ${queue}`)
   }
 
   triggerWatchers (aggregatedWatcherQueue, payload) {
     function trigger(watcherQueue) {
-      this.messenger.publish(watcherQueue, payload)
+      messenger.publish(watcherQueue, payload)
     }
 
     redisClient.smembers(
       aggregatedWatcherQueue,
-      (watcherQueues) => watcherQueues.forEach(trigger)
+      (err, watcherQueues) => watcherQueues.forEach(trigger)
     )
   }
 }

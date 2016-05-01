@@ -1,9 +1,9 @@
 'use strict';
 
-const Messenger = require('./Messenger')
 const Dispatcher = require('./Dispatcher')
 const Registry = require('./Registry')
 const redisClient = require("redis").createClient()
+
 
 class ActionHandler {
   constructor (options) {
@@ -34,13 +34,18 @@ class ActionHandler {
 
   domain (domainName) {
     this.domainName = domainName;
+    return this;
   }
 
   actor (name, callback) {
     this.registry.registerActor(
       this.getActionQueue(name),
-      callback
+      callback.bind(
+        this,
+        this.dispatcher.getDispatcherFor(this.domainName)
+      )
     );
+    return this;
   }
 
   watcher (name, funcName, callback) {
@@ -63,6 +68,8 @@ class ActionHandler {
       `${this.getDispatchQueue(name)}.${funcName}`,
       callback
     );
+
+    return this;
   }
 
 }
