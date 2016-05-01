@@ -43,19 +43,11 @@ class ActionHandler {
     );
   }
 
-  watcher (name, callback) {
-    var name, arguments;
-
+  watcher (name, funcName, callback) {
     if (arguments.length == 2) {
       name = arguments[0];
       funcName = arguments[1].name;
       callback = arguments[1];
-    }
-
-    else {
-      name = arguments[0];
-      funcName = arguments[1];
-      callback = arguments[2];
     }
 
     if (!funcName) {
