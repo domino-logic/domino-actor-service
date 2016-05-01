@@ -7,29 +7,19 @@ const redisClient = require("redis").createClient()
 
 class ActionHandler {
   constructor (options) {
-    this.options = options || {};
+    this.registry = new Registry(options)
+    this.dispatcher = new Dispatcher(options)
 
-    this.registry = new Registry(this.options)
-    this.dispatcher = new Dispatcher(this.options)
-
-    this.action_queue = this.options.action_queue || 'domino_action';
-    this.dispatch_queue = this.options.dispatch_queue || 'domino_dispatch';
+    this.actionQueue = options.actionQueue || 'domino_action';
+    this.dispatchQueue = options.dispatchQueue || 'domino_dispatch';
   }
 
   getActionQueue (actionName) {
-    return `${this.action_queue}.${this.domainName}.${actionName}`
+    return `${this.actionQueue}.${this.domainName}.${actionName}`
   }
 
   getDispatchQueue (actionName) {
-    return `${this.dispatch_queue}.${this.domainName}.${actionName}`
-  }
-
-  dispatch (actionName, payload) {
-    this.dispatcher.dispatch(
-      this.domainName,
-      actionName,
-      payload
-    )
+    return `${this.dispatchQueue}.${this.domainName}.${actionName}`
   }
 
   domain (domainName) {
@@ -38,12 +28,13 @@ class ActionHandler {
   }
 
   actor (name, callback) {
+    const dispatch = this.dispatcher.getDispatcherFor(this.domainName);
+
     this.registry.registerActor(
       this.getActionQueue(name),
-      callback.bind(
-        this,
-        this.dispatcher.getDispatcherFor(this.domainName)
-      )
+      function(body){
+        callback(body, dispatch)
+      }
     );
     return this;
   }

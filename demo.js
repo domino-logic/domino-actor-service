@@ -1,17 +1,20 @@
 const DAS = require('./index');
 const DRM = require('domino-rabbitmq-messenger')
 
-function messageHandler(dispatch, body) {
+function messageHandler(body, dispatch) {
   console.log('messageHandler', body);
 
   dispatch('messageCreated', `He said ${body.payload}`);
 }
 
-function messageCreatedHandler(data) {
+function messageCreatedHandler(data, broadcast) {
   const actionName = data['actionName'];
   const payload = data['payload'];
 
+  broadcast('actionName', 'Something Changed')
+
   console.log(`messageCreatedHandler ${actionName}`, payload);
+
 }
 
 function messageCreateddHandler() {}
@@ -25,5 +28,5 @@ messenger.start( (messenger) => {
   app.domain('message')
   .actor('createMessage', messageHandler)
   .watcher('messageCreated', messageCreatedHandler)
-  // .watcher('messageCreated', messageCreateddHandler)
+
 })

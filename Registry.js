@@ -36,13 +36,13 @@ class Registry {
     setInterval(addToRedisQueue, this.expiration * 1000 / 2)
 
     this.messenger.consume(
-      queue,
-      this.triggerWatchers.bind(this, aggregatedWatcherQueue)
+      watcherQueue,
+      (body) => callback(body, this.messenger.broadcast.bind(this.messenger))
     );
 
     this.messenger.consume(
-      watcherQueue,
-      callback.bind(this)
+      queue,
+      this.triggerWatchers.bind(this, aggregatedWatcherQueue)
     );
 
     console.log(`Registered watcher on ${queue}`)
