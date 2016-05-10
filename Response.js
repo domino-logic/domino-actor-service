@@ -13,17 +13,16 @@ class Response {
       this.messenger.publish(
         this.queue,
         msg,
-        {correlationId: this.corr}
       )
     }
   }
 
   ok (payload) {
-    this.send({status: 'ok', content: payload})
+    this.send({status: 'ok', correlationId: this.corr, content: payload})
   }
 
   error (payload) {
-    this.send({status: 'ok', content: payload})
+    this.send({status: 'ok', correlationId: this.corr, content: payload})
   }
 }
 
