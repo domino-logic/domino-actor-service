@@ -47,8 +47,8 @@ class ActionHandler {
 
     this.registry.registerActor(
       this.getActionQueue(name),
-      function(body){
-        callback(body, dispatch)
+      function(body, response){
+        callback(body, response, dispatch)
       }
     )
     return this

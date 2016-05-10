@@ -2,7 +2,7 @@
 
 
 const redisClient = require('redis').createClient()
-
+const Response = require('./Response')
 
 class Registry {
   constructor (options) {
@@ -10,8 +10,11 @@ class Registry {
     this.expiration = options.expiration || 60 * 5 // default 5 minutes
   }
 
+
   registerActor (queue, callback) {
-    this.messenger.consume(queue, callback)
+    this.messenger.consume(queue, (msg) => {
+      callback(msg, new Response(this.messenger, msg.properties));
+    })
     console.log(`Registered actor on ${queue}`)
   }
 
