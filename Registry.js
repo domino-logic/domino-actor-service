@@ -13,7 +13,7 @@ class Registry {
 
   registerActor (queue, callback) {
     this.messenger.consume(queue, (msg) => {
-      callback(msg, new Response(this.messenger, msg.properties));
+      callback(msg, new Response(this.messenger, msg));
     })
     console.log(`Registered actor on ${queue}`)
   }

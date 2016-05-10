@@ -2,14 +2,19 @@
 
 
 class Response {
-  constructor(messenger, properties) {
+  constructor(messenger, msg) {
     this.messenger = messenger
-    this.queue = properties.replyTo
+    this.queue = msg.properties.replyTo
+    this.corr = msg.properties.corr
   }
 
   send (msg) {
     if(this.queue){
-      this.messenger.publish(this.queue, msg)
+      this.messenger.publish(
+        this.queue,
+        msg,
+        {correlationId: this.corr}
+      )
     }
   }
 
