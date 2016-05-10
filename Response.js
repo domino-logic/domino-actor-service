@@ -21,3 +21,5 @@ class Response {
     this.send({status: 'ok', content: payload})
   }
 }
+
+module.exports = Response
