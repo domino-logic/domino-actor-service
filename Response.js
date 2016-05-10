@@ -15,11 +15,19 @@ class Response {
   }
 
   ok (payload) {
-    this.send({status: 'ok', correlationId: this.corr, content: payload})
+    this.send({
+      status: 'ok',
+      correlationId: this.corr,
+      content: payload
+    })
   }
 
   error (payload) {
-    this.send({status: 'ok', correlationId: this.corr, content: payload})
+    this.send({
+      status: 'ok',
+      correlationId: this.corr,
+      content: payload
+    })
   }
 }
 
