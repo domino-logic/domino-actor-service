@@ -24,7 +24,7 @@ class Response {
 
   error (payload) {
     this.send({
-      status: 'ok',
+      status: 'error',
       correlationId: this.corr,
       content: payload
     })
