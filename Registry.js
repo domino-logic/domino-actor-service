@@ -62,7 +62,7 @@ class Registry {
           console.log(`Deregister watcher ${watcherQueue} from ${aggregatedWatcherQueue}`)
           redisClient.zrem(aggregatedWatcherQueue, watcherQueue)
         }else{
-          this.messenger.publish(watcherQueue, payload)
+          this.messenger.publish(watcherQueue, payload.content)
         }
       }
     }

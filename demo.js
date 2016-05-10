@@ -16,8 +16,6 @@ function messageCreatedHandler(data, broadcast) {
 
 }
 
-function messageCreateddHandler() {}
-
 const app = new DAS.ActionHandler()
 
 app.start( (err, app) => {
