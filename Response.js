@@ -10,10 +10,7 @@ class Response {
 
   send (msg) {
     if(this.queue){
-      this.messenger.publish(
-        this.queue,
-        msg,
-      )
+      this.messenger.publish(this.queue, msg)
     }
   }
 
