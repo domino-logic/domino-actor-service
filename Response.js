@@ -5,7 +5,7 @@ class Response {
   constructor(messenger, msg) {
     this.messenger = messenger
     this.queue = msg.properties.replyTo
-    this.corr = msg.properties.corr
+    this.corr = msg.properties.correlationId
   }
 
   send (msg) {
