@@ -22,6 +22,14 @@ class Response {
     })
   }
 
+  notify (payload) {
+    this.send({
+      status: 'notify',
+      correlationId: this.corr,
+      content: payload
+    })
+  }
+
   error (payload) {
     this.send({
       status: 'error',
